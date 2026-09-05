@@ -31,6 +31,11 @@ const FONT_OPTIONS = [
 const TEXT_COLORS = [
   { value: "#2b1440", label: "Plum" },
   { value: "#7f1d1d", label: "Ruby" },
+  { value: "#111827", label: "Charcoal" },
+  { value: "#0f172a", label: "Midnight" },
+  { value: "#334155", label: "Slate" },
+  { value: "#065f46", label: "Deep teal" },
+  { value: "#4c1d95", label: "Deep violet" },
   { value: "#1e3a8a", label: "Sapphire" },
   { value: "#312e81", label: "Royal blue" },
   { value: "#581c87", label: "Royal purple" },
