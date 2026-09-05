@@ -64,6 +64,12 @@ export default function Nav({ pages, current, onNavigate }: Props) {
 
           <div className="flex items-center gap-2">
             <ShareQr />
+            <a
+              href="./admin"
+              className="glass rounded-full px-3 py-2 text-[0.65rem] font-semibold tracking-wider text-cream uppercase"
+            >
+              Admin login
+            </a>
             <MusicToggle />
             <button
               onClick={() => setOpen((v) => !v)}

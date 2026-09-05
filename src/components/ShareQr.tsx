@@ -11,9 +11,9 @@ export default function ShareQr() {
         onClick={() => setOpen(true)}
         aria-label="Show QR code"
         title="Share with a QR code"
-        className="glass flex h-10 w-10 items-center justify-center rounded-full text-lg"
+        className="glass flex h-10 items-center justify-center rounded-full px-3 text-xs font-semibold tracking-wider text-cream uppercase"
       >
-        ▦
+        QR
       </button>
       {open && (
         <div className="fixed inset-0 z-[800] flex items-center justify-center bg-black/75 p-4" onClick={() => setOpen(false)}>
