@@ -416,6 +416,13 @@ textarea {
     padding-bottom: 0;
   }
 
+  .wish-keyboard-open .wish-composer {
+    max-height: calc(100% - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .wish-keyboard-open .page-scroll {
     overflow-y: auto;
     flex: 1;
