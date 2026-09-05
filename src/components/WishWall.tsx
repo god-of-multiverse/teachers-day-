@@ -180,7 +180,8 @@ export default function WishWall() {
         setStatus("Delete is not enabled yet. Please run the latest Supabase schema.");
         return;
       }
-      setWishes((current) => current.filter((item) => item.id !== id));
+      const remaining = wishes.filter((item) => item.id !== id);
+      persist(remaining);
       return;
     }
 
