@@ -53,6 +53,8 @@ export default function WishWall() {
   const [ownerId] = useState(getOwnerId);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
+  const [composeFont, setComposeFont] = useState("hand");
+  const [composeColor, setComposeColor] = useState("#2b1440");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editText, setEditText] = useState("");
@@ -177,8 +179,8 @@ export default function WishWall() {
       ownerId,
       name: name.trim() || "A student",
       text: text.trim(),
-      font: "hand",
-      color: "#2b1440",
+      font: composeFont,
+      color: composeColor,
     };
     if (supabase) {
       const { error } = await supabase.from("wishes").insert({
@@ -198,6 +200,8 @@ export default function WishWall() {
       persist([wish, ...wishes]);
     }
     setText("");
+    setComposeFont("hand");
+    setComposeColor("#2b1440");
     setOpen(false);
     listRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     fireConfetti(window.innerWidth / 2, window.innerHeight * 0.55, 70);
@@ -335,6 +339,34 @@ export default function WishWall() {
               maxLength={220}
               className="mt-2 w-full resize-none overflow-y-auto rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.8rem] leading-relaxed text-cream placeholder-cream/35 outline-none focus:border-amber-300/60"
             />
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <label className="text-[0.6rem] tracking-wider text-cream/55 uppercase">
+                Font
+                <select
+                  value={composeFont}
+                  onChange={(e) => setComposeFont(e.target.value)}
+                  className="ml-1 rounded-md bg-white/10 px-1.5 py-1 text-xs text-cream outline-none"
+                >
+                  {FONT_OPTIONS.map((font) => (
+                    <option key={font.value} value={font.value} className="text-plum">
+                      {font.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <span className="text-[0.6rem] tracking-wider text-cream/55 uppercase">Color</span>
+              {TEXT_COLORS.map((color) => (
+                <button
+                  key={color.value}
+                  type="button"
+                  title={color.label}
+                  aria-label={`${color.label} text`}
+                  onClick={() => setComposeColor(color.value)}
+                  className={`h-5 w-5 rounded-full border-2 ${composeColor === color.value ? "border-amber-200" : "border-white/60"} ${color.value === "rainbow" ? "wish-rainbow-swatch" : ""}`}
+                  style={color.value === "rainbow" ? undefined : { backgroundColor: color.value }}
+                />
+              ))}
+            </div>
             <div className="mt-2 flex items-center gap-2">
               <span className="text-[0.55rem] tracking-widest text-cream/40 uppercase">
                 {220 - text.length} left
@@ -379,27 +411,7 @@ export default function WishWall() {
                 key={w.id}
                 className={`group relative break-inside-avoid rounded-xl bg-gradient-to-br p-3 pt-5 text-plum shadow-lg transition-transform duration-300 sm:hover:rotate-0 sm:hover:scale-[1.02] ${TONES[i % TONES.length]} ${TILT[i % TILT.length]}`}
               >
-                <div className="absolute -top-1.5 left-1/2 flex -translate-x-1/2 items-center gap-1">
-                  <span className="text-sm drop-shadow">📌</span>
-                  {canManage && (
-                    <div className="flex gap-1 text-[0.55rem] font-semibold uppercase">
-                      <button
-                        onClick={() => startEdit(w)}
-                        aria-label="Edit wish"
-                        className="rounded-full bg-white/50 px-1.5 py-0.5 text-plum shadow-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => remove(w.id)}
-                        aria-label="Delete wish"
-                        className="rounded-full bg-white/50 px-1.5 py-0.5 text-plum shadow-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
+                <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-sm drop-shadow">📌</span>
                 {editingId === w.id ? (
                   <div className="space-y-2">
                     <input
@@ -469,6 +481,22 @@ export default function WishWall() {
                     <p className="mt-2 text-[0.5rem] font-semibold tracking-[0.16em] text-plum/60 uppercase">
                       — {w.name}
                     </p>
+                    {canManage && <div className="mt-2 flex justify-end gap-1.5 text-[0.6rem] font-semibold uppercase">
+                      <button
+                        onClick={() => startEdit(w)}
+                        aria-label="Edit wish"
+                        className="rounded-full bg-plum/10 px-2 py-1 text-plum/65 transition hover:bg-plum/20"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => remove(w.id)}
+                        aria-label="Delete wish"
+                        className="rounded-full bg-plum/10 px-2 py-1 text-plum/65 transition hover:bg-plum/20"
+                      >
+                        Delete
+                      </button>
+                    </div>}
                   </>
                 )}
               </div>
