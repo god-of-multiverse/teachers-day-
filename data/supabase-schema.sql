@@ -15,6 +15,11 @@ create table if not exists public.deleted_wishes (
   deleted_at timestamptz not null default now()
 );
 
+alter table public.wishes add column if not exists font text not null default 'hand';
+alter table public.wishes add column if not exists color text not null default '#2b1440';
+alter table public.deleted_wishes add column if not exists font text not null default 'hand';
+alter table public.deleted_wishes add column if not exists color text not null default '#2b1440';
+
 alter table public.wishes enable row level security;
 
 drop policy if exists "Anyone can read active wishes" on public.wishes;
@@ -64,8 +69,8 @@ begin
     return false;
   end if;
 
-  insert into public.deleted_wishes (id, owner_id, name, comment, deleted_at)
-  values (removed.id, removed.owner_id, removed.name, removed.comment, now())
+  insert into public.deleted_wishes (id, owner_id, name, comment, font, color, deleted_at)
+  values (removed.id, removed.owner_id, removed.name, removed.comment, removed.font, removed.color, now())
   on conflict (id) do nothing;
 
   return true;

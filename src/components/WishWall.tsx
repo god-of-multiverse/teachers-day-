@@ -2,7 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { fireConfetti } from "../lib/confetti";
 import { supabase } from "../lib/supabase";
 
-type Wish = { name: string; text: string; id: string; ownerId?: string };
+type Wish = {
+  name: string;
+  text: string;
+  id: string;
+  ownerId?: string;
+  font?: string;
+  color?: string;
+};
 type DeletedWish = Wish & { deletedAt: string };
 
 const KEY = "teachers-day-wishes";
@@ -15,6 +22,17 @@ const TONES = [
   "from-violet-200/95 to-violet-100/85",
   "from-emerald-200/95 to-emerald-100/85",
   "from-sky-200/95 to-sky-100/85",
+];
+const FONT_OPTIONS = [
+  { value: "hand", label: "Handwritten", className: "font-hand" },
+  { value: "display", label: "Elegant", className: "font-display" },
+  { value: "sans", label: "Clean", className: "font-sans" },
+];
+const TEXT_COLORS = [
+  { value: "#2b1440", label: "Plum" },
+  { value: "#7f1d1d", label: "Ruby" },
+  { value: "#14532d", label: "Forest" },
+  { value: "#164e63", label: "Ocean" },
 ];
 
 function getOwnerId() {
@@ -37,6 +55,8 @@ export default function WishWall() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editText, setEditText] = useState("");
+  const [editFont, setEditFont] = useState("hand");
+  const [editColor, setEditColor] = useState("#2b1440");
   const [status, setStatus] = useState("");
   const [open, setOpen] = useState(false); // compose panel (mobile-friendly)
   const listRef = useRef<HTMLDivElement>(null);
@@ -49,7 +69,7 @@ export default function WishWall() {
       if (supabase) {
         let { data, error } = await supabase
           .from("wishes")
-          .select("id, owner_id, name, comment")
+          .select("id, owner_id, name, comment, font, color")
           .is("deleted_at", null)
           .order("created_at", { ascending: false });
         if (!error && active) {
@@ -75,7 +95,7 @@ export default function WishWall() {
             );
             const refreshed = await supabase
               .from("wishes")
-              .select("id, owner_id, name, comment")
+                .select("id, owner_id, name, comment, font, color")
               .is("deleted_at", null)
               .order("created_at", { ascending: false });
             if (!refreshed.error) data = refreshed.data;
@@ -86,6 +106,8 @@ export default function WishWall() {
             ownerId: wish.owner_id,
             name: wish.name,
             text: wish.comment,
+                        font: wish.font ?? "hand",
+                        color: wish.color ?? "#2b1440",
           }));
           setWishes(sharedWishes);
           localStorage.setItem(KEY, JSON.stringify(sharedWishes));
@@ -154,6 +176,8 @@ export default function WishWall() {
       ownerId,
       name: name.trim() || "A student",
       text: text.trim(),
+      font: "hand",
+      color: "#2b1440",
     };
     if (supabase) {
       const { error } = await supabase.from("wishes").insert({
@@ -161,6 +185,8 @@ export default function WishWall() {
         owner_id: wish.ownerId,
         name: wish.name,
         comment: wish.text,
+        font: wish.font,
+        color: wish.color,
       });
       if (error) {
         persist([wish, ...wishes]);
@@ -213,6 +239,8 @@ export default function WishWall() {
     setEditingId(wish.id);
     setEditName(wish.name);
     setEditText(wish.text);
+    setEditFont(wish.font || "hand");
+    setEditColor(wish.color || "#2b1440");
   };
 
   const saveEdit = async (id: string) => {
@@ -222,7 +250,7 @@ export default function WishWall() {
     if (supabase) {
       const { error } = await supabase
         .from("wishes")
-        .update({ name: nextName, comment: nextText })
+        .update({ name: nextName, comment: nextText, font: editFont, color: editColor })
         .eq("id", id)
         .eq("owner_id", ownerId);
       if (error) return;
@@ -230,7 +258,7 @@ export default function WishWall() {
     persist(
       wishes.map((wish) =>
         wish.id === id && wish.ownerId === ownerId
-          ? { ...wish, name: nextName, text: nextText }
+          ? { ...wish, name: nextName, text: nextText, font: editFont, color: editColor }
           : wish,
       ),
     );
@@ -370,6 +398,34 @@ export default function WishWall() {
                       className="w-full resize-none rounded-md border border-plum/20 bg-white/30 px-2 py-1 text-sm leading-snug text-plum outline-none"
                       rows={4}
                     />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <label className="text-[0.6rem] font-semibold uppercase text-plum/60">
+                        Font
+                        <select
+                          value={editFont}
+                          onChange={(e) => setEditFont(e.target.value)}
+                          className="ml-1 rounded-md bg-white/35 px-1.5 py-1 text-xs text-plum outline-none"
+                        >
+                          {FONT_OPTIONS.map((font) => (
+                            <option key={font.value} value={font.value}>
+                              {font.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <span className="text-[0.6rem] font-semibold uppercase text-plum/60">Color</span>
+                      {TEXT_COLORS.map((color) => (
+                        <button
+                          key={color.value}
+                          type="button"
+                          title={color.label}
+                          aria-label={`${color.label} text`}
+                          onClick={() => setEditColor(color.value)}
+                          className={`h-5 w-5 rounded-full border-2 ${editColor === color.value ? "border-plum" : "border-white/70"}`}
+                          style={{ backgroundColor: color.value }}
+                        />
+                      ))}
+                    </div>
                     <div className="flex justify-end gap-1.5 text-[0.6rem] font-semibold uppercase">
                       <button onClick={() => setEditingId(null)} className="rounded-full px-2 py-1 text-plum/60">
                         Cancel
@@ -385,7 +441,10 @@ export default function WishWall() {
                   </div>
                 ) : (
                   <>
-                    <p className="font-hand text-[0.95rem] leading-snug break-words hyphens-auto sm:text-lg">
+                    <p
+                      className={`${FONT_OPTIONS.find((font) => font.value === w.font)?.className || "font-hand"} text-[0.95rem] leading-snug break-words hyphens-auto sm:text-lg`}
+                      style={{ color: w.color || "#2b1440" }}
+                    >
                       {w.text}
                     </p>
                     <p className="mt-2 text-[0.5rem] font-semibold tracking-[0.16em] text-plum/60 uppercase">
