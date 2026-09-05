@@ -398,6 +398,20 @@ textarea {
   background: linear-gradient(135deg, #ef4444, #f59e0b, #22c55e, #06b6d4, #6366f1, #ec4899);
 }
 
+.wish-style-controls select {
+  max-width: 9rem;
+}
+
+@media (max-width: 640px) {
+  .wish-style-controls {
+    row-gap: 0.45rem;
+  }
+
+  .wish-style-controls select {
+    max-width: 7.5rem;
+  }
+}
+
 @keyframes wishRainbow {
   to {
     background-position: 250% 0;

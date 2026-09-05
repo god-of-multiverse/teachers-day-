@@ -350,7 +350,7 @@ export default function WishWall() {
               maxLength={220}
               className="mt-2 w-full resize-none overflow-y-auto rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.8rem] leading-relaxed text-cream placeholder-cream/35 outline-none focus:border-amber-300/60"
             />
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="wish-style-controls mt-2 flex max-w-full flex-wrap items-center gap-2">
               <label className="text-[0.6rem] tracking-wider text-cream/55 uppercase">
                 Font
                 <select
@@ -440,7 +440,7 @@ export default function WishWall() {
                       className="w-full resize-none rounded-md border border-plum/20 bg-white/30 px-2 py-1 text-sm leading-snug text-plum outline-none"
                       rows={4}
                     />
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="wish-style-controls flex max-w-full flex-wrap items-center gap-2">
                       <label className="text-[0.6rem] font-semibold uppercase text-plum/60">
                         Font
                         <select
