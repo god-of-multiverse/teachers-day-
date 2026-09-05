@@ -15,6 +15,10 @@ create table if not exists public.deleted_wishes (
   deleted_at timestamptz not null default now()
 );
 
+create table if not exists public.admin_users (
+  email text primary key
+);
+
 alter table public.wishes add column if not exists font text not null default 'hand';
 alter table public.wishes add column if not exists color text not null default '#2b1440';
 alter table public.wishes add column if not exists likes integer not null default 0;
@@ -23,11 +27,18 @@ alter table public.deleted_wishes add column if not exists font text not null de
 alter table public.deleted_wishes add column if not exists color text not null default '#2b1440';
 
 alter table public.wishes enable row level security;
+alter table public.admin_users enable row level security;
 
 drop policy if exists "Anyone can read active wishes" on public.wishes;
 create policy "Anyone can read active wishes"
 on public.wishes for select
 using (deleted_at is null);
+
+drop policy if exists "Approved admins can read all wishes" on public.wishes;
+create policy "Approved admins can read all wishes"
+on public.wishes for select
+to authenticated
+using (exists (select 1 from public.admin_users where lower(email) = lower(auth.jwt() ->> 'email')));
 
 drop policy if exists "Anyone can add wishes" on public.wishes;
 create policy "Anyone can add wishes"
@@ -48,6 +59,18 @@ to anon, authenticated
 using (true);
 
 alter table public.deleted_wishes enable row level security;
+
+drop policy if exists "Approved admins can read deleted wishes" on public.deleted_wishes;
+create policy "Approved admins can read deleted wishes"
+on public.deleted_wishes for select
+to authenticated
+using (exists (select 1 from public.admin_users where lower(email) = lower(auth.jwt() ->> 'email')));
+
+drop policy if exists "Admins can read own allowlist entry" on public.admin_users;
+create policy "Admins can read own allowlist entry"
+on public.admin_users for select
+to authenticated
+using (lower(email) = lower(auth.jwt() ->> 'email'));
 
 drop policy if exists "Anyone can log deleted wishes" on public.deleted_wishes;
 create policy "Anyone can log deleted wishes"

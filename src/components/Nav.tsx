@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import MusicToggle from "./MusicToggle";
+import ShareQr from "./ShareQr";
 
 type Props = {
   pages: { label: string; icon: string }[];
@@ -62,6 +63,7 @@ export default function Nav({ pages, current, onNavigate }: Props) {
           </div>
 
           <div className="flex items-center gap-2">
+            <ShareQr />
             <MusicToggle />
             <button
               onClick={() => setOpen((v) => !v)}

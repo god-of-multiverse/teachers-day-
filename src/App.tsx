@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import Background from "./components/Background";
 import Book from "./components/Book";
+import Admin from "./components/Admin";
 
 export default function App() {
   /**
@@ -24,6 +25,10 @@ export default function App() {
       window.removeEventListener("orientationchange", apply);
     };
   }, []);
+
+  if (window.location.pathname.endsWith("/admin") || window.location.search === "?admin") {
+    return <Admin />;
+  }
 
   return (
     <div
