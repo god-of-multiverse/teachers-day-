@@ -1,0 +1,10 @@
+{
+  "name": "Happy Teacher's Day",
+  "short_name": "Teacher's Day",
+  "description": "A heartfelt Teacher's Day tribute.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#14081f",
+  "theme_color": "#14081f",
+  "icons": []
+}

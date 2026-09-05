@@ -15,6 +15,7 @@ type DeletedWish = Wish & { deletedAt: string };
 const KEY = "teachers-day-wishes";
 const OWNER_KEY = "teachers-day-owner-id";
 const AUDIT_KEY = "teachers-day-deleted-wishes";
+const BLOCKED_WORDS = ["spam", "http://", "https://"];
 const TILT = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2", "rotate-0"];
 const TONES = [
   "from-amber-200/95 to-amber-100/85",
@@ -72,6 +73,7 @@ export default function WishWall() {
   const [editFont, setEditFont] = useState("hand");
   const [editColor, setEditColor] = useState("#2b1440");
   const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false); // compose panel (mobile-friendly)
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -92,6 +94,7 @@ export default function WishWall() {
     let active = true;
 
     const load = async () => {
+      setLoading(true);
       if (supabase) {
         let { data, error } = await supabase
           .from("wishes")
@@ -137,8 +140,10 @@ export default function WishWall() {
           }));
           setWishes(sharedWishes);
           localStorage.setItem(KEY, JSON.stringify(sharedWishes));
+          setLoading(false);
           return;
         }
+        if (error) setStatus("Shared wishes are temporarily unavailable. Showing saved wishes.");
       }
 
       try {
@@ -148,12 +153,14 @@ export default function WishWall() {
           const realWishes = saved.filter((wish) => !wish.id.startsWith("seed-"));
           if (active) setWishes(realWishes);
           localStorage.setItem(KEY, JSON.stringify(realWishes));
+          setLoading(false);
           return;
         }
       } catch {
         /* ignore */
       }
       if (active) setWishes([]);
+      setLoading(false);
     };
 
     void load();
@@ -197,6 +204,11 @@ export default function WishWall() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
+    const normalized = text.trim().toLowerCase();
+    if (BLOCKED_WORDS.some((word) => normalized.includes(word))) {
+      setStatus("Please remove links or spam-like text before posting.");
+      return;
+    }
     const wish = {
       id: crypto.randomUUID?.() ?? String(Date.now()),
       ownerId,
@@ -421,7 +433,9 @@ export default function WishWall() {
         data-scrollable
         className="page-scroll mt-2.5 min-h-0 flex-1 sm:mt-3"
       >
-        {wishes.length === 0 ? (
+        {loading ? (
+          <p className="py-10 text-center text-[0.8rem] text-cream/50">Loading wishes…</p>
+        ) : wishes.length === 0 ? (
           <p className="py-10 text-center text-[0.8rem] text-cream/40">
             No wishes yet — be the first to pin one. 💛
           </p>
