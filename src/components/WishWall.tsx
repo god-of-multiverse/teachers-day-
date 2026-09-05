@@ -172,32 +172,14 @@ export default function WishWall() {
     setStatus("");
 
     if (supabase) {
-      const deletedAt = new Date().toISOString();
-      const { error } = await supabase
-        .from("wishes")
-        .update({ deleted_at: deletedAt })
-        .eq("id", id);
-      if (error) {
-        setStatus("This wish could not be deleted. Please try again.");
-        return;
-      }
-      const { data: stillActive, error: verifyError } = await supabase
-        .from("wishes")
-        .select("id")
-        .eq("id", id)
-        .is("deleted_at", null);
-      if (verifyError || stillActive?.length) {
-        setStatus("Delete was blocked by the database. Please run the latest schema in Supabase.");
-        return;
-      }
-      const { error: auditError } = await supabase.from("deleted_wishes").insert({
-        id: wish.id,
-        owner_id: wish.ownerId,
-        name: wish.name,
-        comment: wish.text,
-        deleted_at: deletedAt,
+      const { data: deleted, error } = await supabase.rpc("delete_wish", {
+        wish_id: id,
+        wish_owner_id: ownerId,
       });
-      if (auditError) console.error("Could not write deleted wish audit:", auditError);
+      if (error || deleted !== true) {
+        setStatus("Delete is not enabled yet. Please run the latest Supabase schema.");
+        return;
+      }
       setWishes((current) => current.filter((item) => item.id !== id));
       return;
     }
