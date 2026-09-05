@@ -407,6 +407,9 @@ textarea {
   .glass {
     backdrop-filter: blur(8px);
   }
+  .wish-composer {
+    scroll-margin-block: 1rem;
+  }
 }
 
 /* ---------- reduced motion ---------- */

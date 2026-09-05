@@ -118,6 +118,15 @@ export default function WishWall() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const frame = requestAnimationFrame(() => {
+      taRef.current?.focus({ preventScroll: true });
+      taRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
+
   const persist = (next: Wish[]) => {
     setWishes(next);
     try {
@@ -264,7 +273,6 @@ export default function WishWall() {
           <button
             onClick={() => {
               setOpen(true);
-              setTimeout(() => taRef.current?.focus(), 60);
             }}
             className="glass flex w-full items-center gap-2.5 rounded-full px-4 py-2.5 text-left text-[0.8rem] text-cream/55 transition active:scale-[0.99] sm:hover:border-amber-300/40"
           >
@@ -275,11 +283,20 @@ export default function WishWall() {
             </span>
           </button>
         ) : (
-          <form onSubmit={submit} className="glass rounded-2xl p-2.5 sm:p-3">
+          <form
+            onSubmit={submit}
+            className="wish-composer glass rounded-2xl p-2.5 sm:p-3"
+            onFocus={(e) => {
+              if (window.innerWidth <= 640) {
+                e.target.scrollIntoView({ block: "center", behavior: "smooth" });
+              }
+            }}
+          >
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name (optional)"
+              enterKeyHint="next"
               maxLength={28}
               className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.8rem] text-cream placeholder-cream/35 outline-none focus:border-amber-300/60"
             />
@@ -291,6 +308,7 @@ export default function WishWall() {
                 autoGrow(e.target);
               }}
               placeholder="Write your wish for Ma'am…"
+              enterKeyHint="done"
               rows={2}
               maxLength={220}
               className="mt-2 w-full resize-none overflow-y-auto rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[0.8rem] leading-relaxed text-cream placeholder-cream/35 outline-none focus:border-amber-300/60"
