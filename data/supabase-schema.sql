@@ -103,3 +103,44 @@ end;
 $$;
 
 grant execute on function public.delete_wish(uuid, text) to anon, authenticated;
+
+create or replace function public.admin_delete_wish(wish_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  removed public.wishes;
+begin
+  if not exists (select 1 from public.admin_users where lower(email) = lower(auth.jwt() ->> 'email')) then
+    raise exception 'Admin access required';
+  end if;
+
+  delete from public.wishes where id = wish_id returning * into removed;
+  if not found then return false; end if;
+
+  insert into public.deleted_wishes (id, owner_id, name, comment, font, color, deleted_at)
+  values (removed.id, removed.owner_id, removed.name, removed.comment, removed.font, removed.color, now())
+  on conflict (id) do nothing;
+  return true;
+end;
+$$;
+
+create or replace function public.admin_edit_wish(wish_id uuid, next_name text, next_comment text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not exists (select 1 from public.admin_users where lower(email) = lower(auth.jwt() ->> 'email')) then
+    raise exception 'Admin access required';
+  end if;
+  update public.wishes set name = next_name, comment = next_comment where id = wish_id;
+  return found;
+end;
+$$;
+
+grant execute on function public.admin_delete_wish(uuid) to authenticated;
+grant execute on function public.admin_edit_wish(uuid, text, text) to authenticated;

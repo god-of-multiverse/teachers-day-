@@ -45,6 +45,25 @@ export default function Admin() {
     setRows([]);
   };
 
+  const editWish = async (row: Row) => {
+    const nextComment = window.prompt("Edit this wish", row.comment);
+    if (!nextComment?.trim()) return;
+    const { error: editError } = await supabase?.rpc("admin_edit_wish", {
+      wish_id: row.id,
+      next_name: row.name,
+      next_comment: nextComment.trim(),
+    }) ?? { error: new Error("Supabase is unavailable") };
+    if (editError) setError(editError.message);
+    else void load();
+  };
+
+  const deleteWish = async (id: string) => {
+    if (!window.confirm("Delete this wish permanently?")) return;
+    const { error: deleteError } = await supabase?.rpc("admin_delete_wish", { wish_id: id }) ?? { error: new Error("Supabase is unavailable") };
+    if (deleteError) setError(deleteError.message);
+    else void load();
+  };
+
   if (!user) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#14081f] p-4 text-cream">
@@ -70,7 +89,7 @@ export default function Admin() {
         <p className="mt-2 text-sm text-cream/60">Signed in as {user}</p>
         {error && <p className="mt-3 rounded-xl bg-rose-300/10 p-3 text-sm text-rose-200">{error}</p>}
         <div className="mt-6 space-y-3">
-          {rows.map((row) => <article key={row.id} className="rounded-2xl bg-white/10 p-4"><p className="font-semibold text-amber-200">{row.name}</p><p className="mt-1">{row.comment}</p><p className="mt-2 text-xs text-cream/45">{new Date(row.created_at).toLocaleString()}</p></article>)}
+          {rows.map((row) => <article key={row.id} className="rounded-2xl bg-white/10 p-4"><p className="font-semibold text-amber-200">{row.name}</p><p className="mt-1">{row.comment}</p><p className="mt-2 text-xs text-cream/45">{new Date(row.created_at).toLocaleString()}</p><div className="mt-3 flex gap-2"><button onClick={() => void editWish(row)} className="rounded-full bg-amber-300 px-3 py-1 text-xs font-semibold text-plum">Edit</button><button onClick={() => void deleteWish(row.id)} className="rounded-full bg-rose-300/20 px-3 py-1 text-xs font-semibold text-rose-100">Delete</button></div></article>)}
           {!rows.length && <p className="text-cream/60">No wishes found.</p>}
         </div>
       </div>
