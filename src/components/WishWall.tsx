@@ -46,12 +46,37 @@ export default function WishWall() {
 
     const load = async () => {
       if (supabase) {
-        const { data, error } = await supabase
+        let { data, error } = await supabase
           .from("wishes")
           .select("id, owner_id, name, comment")
           .is("deleted_at", null)
           .order("created_at", { ascending: false });
         if (!error && active) {
+          const localRaw = localStorage.getItem(KEY);
+          const localWishes = localRaw ? (JSON.parse(localRaw) as Wish[]) : [];
+          const serverIds = new Set((data ?? []).map((wish) => wish.id));
+          const oldWishes = localWishes.filter(
+            (wish) => !wish.id.startsWith("seed-") && !serverIds.has(wish.id),
+          );
+
+          if (oldWishes.length) {
+            await supabase.from("wishes").upsert(
+              oldWishes.map((wish) => ({
+                id: wish.id,
+                owner_id: wish.ownerId || ownerId,
+                name: wish.name,
+                comment: wish.text,
+              })),
+              { onConflict: "id", ignoreDuplicates: true },
+            );
+            const refreshed = await supabase
+              .from("wishes")
+              .select("id, owner_id, name, comment")
+              .is("deleted_at", null)
+              .order("created_at", { ascending: false });
+            if (!refreshed.error) data = refreshed.data;
+          }
+
           setWishes(
             (data ?? []).map((wish) => ({
               id: wish.id,
@@ -117,7 +142,10 @@ export default function WishWall() {
         name: wish.name,
         comment: wish.text,
       });
-      if (error) return;
+      if (error) {
+        persist([wish, ...wishes]);
+        return;
+      }
       setWishes((current) => [wish, ...current]);
     } else {
       persist([wish, ...wishes]);
