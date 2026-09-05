@@ -167,8 +167,7 @@ export default function WishWall() {
       const { error } = await supabase
         .from("wishes")
         .update({ deleted_at: deletedAt })
-        .eq("id", id)
-        .eq("owner_id", ownerId);
+        .eq("id", id);
       if (error) {
         setStatus("This wish could not be deleted. Please try again.");
         return;
