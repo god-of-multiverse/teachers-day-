@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { fireConfetti } from "../lib/confetti";
 
-type Wish = { name: string; text: string; id: string };
+type Wish = { name: string; text: string; id: string; ownerId?: string };
 
 const KEY = "teachers-day-wishes";
+const OWNER_KEY = "teachers-day-owner-id";
 const TILT = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2", "rotate-0"];
 const TONES = [
   "from-amber-200/95 to-amber-100/85",
@@ -13,8 +14,21 @@ const TONES = [
   "from-sky-200/95 to-sky-100/85",
 ];
 
+function getOwnerId() {
+  try {
+    const saved = localStorage.getItem(OWNER_KEY);
+    if (saved) return saved;
+    const id = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+    localStorage.setItem(OWNER_KEY, id);
+    return id;
+  } catch {
+    return "temporary-owner";
+  }
+}
+
 export default function WishWall() {
   const [wishes, setWishes] = useState<Wish[]>([]);
+  const [ownerId] = useState(getOwnerId);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -55,6 +69,7 @@ export default function WishWall() {
     persist([
       {
         id: crypto.randomUUID?.() ?? String(Date.now()),
+        ownerId,
         name: name.trim() || "A student",
         text: text.trim(),
       },
@@ -66,7 +81,8 @@ export default function WishWall() {
     fireConfetti(window.innerWidth / 2, window.innerHeight * 0.55, 70);
   };
 
-  const remove = (id: string) => persist(wishes.filter((w) => w.id !== id));
+  const remove = (id: string) =>
+    persist(wishes.filter((wish) => wish.id !== id || wish.ownerId !== ownerId));
 
   const startEdit = (wish: Wish) => {
     setEditingId(wish.id);
@@ -78,7 +94,7 @@ export default function WishWall() {
     if (!editText.trim()) return;
     persist(
       wishes.map((wish) =>
-        wish.id === id
+        wish.id === id && wish.ownerId === ownerId
           ? { ...wish, name: editName.trim() || "A student", text: editText.trim() }
           : wish,
       ),
@@ -182,6 +198,10 @@ export default function WishWall() {
         ) : (
           <div className="columns-2 gap-2.5 pb-2 sm:columns-3 sm:gap-3 lg:columns-4 [&>*]:mb-2.5 sm:[&>*]:mb-3">
             {wishes.map((w, i) => (
+              // Only the browser that created a wish can manage it.
+              (() => {
+                const canManage = w.ownerId === ownerId;
+                return (
               <div
                 key={w.id}
                 className={`group relative break-inside-avoid rounded-xl bg-gradient-to-br p-3 pt-5 text-plum shadow-lg transition-transform duration-300 sm:hover:rotate-0 sm:hover:scale-[1.02] ${TONES[i % TONES.length]} ${TILT[i % TILT.length]}`}
@@ -227,7 +247,7 @@ export default function WishWall() {
                     <p className="mt-2 text-[0.5rem] font-semibold tracking-[0.16em] text-plum/60 uppercase">
                       — {w.name}
                     </p>
-                    <div className="mt-2 flex justify-end gap-1.5 text-[0.6rem] font-semibold uppercase">
+                    {canManage && <div className="mt-2 flex justify-end gap-1.5 text-[0.6rem] font-semibold uppercase">
                       <button
                         onClick={() => startEdit(w)}
                         aria-label="Edit wish"
@@ -242,10 +262,12 @@ export default function WishWall() {
                       >
                         Delete
                       </button>
-                    </div>
+                    </div>}
                   </>
                 )}
               </div>
+                );
+              })()
             ))}
           </div>
         )}
