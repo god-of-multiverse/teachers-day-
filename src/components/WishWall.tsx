@@ -36,6 +36,11 @@ const TEXT_COLORS = [
   { value: "rainbow", label: "Rainbow glow" },
 ];
 
+const colorsForName = (name: string) =>
+  TEXT_COLORS.filter(
+    (color) => color.value !== "rainbow" || name.trim().toLowerCase() === "bobby",
+  );
+
 function getOwnerId() {
   try {
     const saved = localStorage.getItem(OWNER_KEY);
@@ -355,7 +360,7 @@ export default function WishWall() {
                 </select>
               </label>
               <span className="text-[0.6rem] tracking-wider text-cream/55 uppercase">Color</span>
-              {TEXT_COLORS.map((color) => (
+              {colorsForName(name).map((color) => (
                 <button
                   key={color.value}
                   type="button"
@@ -445,7 +450,7 @@ export default function WishWall() {
                         </select>
                       </label>
                       <span className="text-[0.6rem] font-semibold uppercase text-plum/60">Color</span>
-                      {TEXT_COLORS.map((color) => (
+                      {colorsForName(w.name).map((color) => (
                         <button
                           key={color.value}
                           type="button"
