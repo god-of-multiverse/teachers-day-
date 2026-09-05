@@ -57,7 +57,10 @@ export default function WishWall() {
           const localWishes = localRaw ? (JSON.parse(localRaw) as Wish[]) : [];
           const serverIds = new Set((data ?? []).map((wish) => wish.id));
           const oldWishes = localWishes.filter(
-            (wish) => !wish.id.startsWith("seed-") && !serverIds.has(wish.id),
+            (wish) =>
+              !wish.id.startsWith("seed-") &&
+              wish.ownerId === ownerId &&
+              !serverIds.has(wish.id),
           );
 
           if (oldWishes.length) {
@@ -78,14 +81,14 @@ export default function WishWall() {
             if (!refreshed.error) data = refreshed.data;
           }
 
-          setWishes(
-            (data ?? []).map((wish) => ({
-              id: wish.id,
-              ownerId: wish.owner_id,
-              name: wish.name,
-              text: wish.comment,
-            })),
-          );
+          const sharedWishes = (data ?? []).map((wish) => ({
+            id: wish.id,
+            ownerId: wish.owner_id,
+            name: wish.name,
+            text: wish.comment,
+          }));
+          setWishes(sharedWishes);
+          localStorage.setItem(KEY, JSON.stringify(sharedWishes));
           return;
         }
       }
@@ -111,9 +114,16 @@ export default function WishWall() {
       { event: "*", schema: "public", table: "wishes" },
       () => void load(),
     ).subscribe();
+    const refresh = window.setInterval(() => void load(), 5000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
 
     return () => {
       active = false;
+      window.clearInterval(refresh);
+      document.removeEventListener("visibilitychange", onVisible);
       if (channel) void supabase?.removeChannel(channel);
     }
   }, []);
