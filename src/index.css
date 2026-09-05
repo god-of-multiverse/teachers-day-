@@ -1,0 +1,431 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Cormorant Garamond", ui-serif, Georgia, serif;
+  --font-hand: "Caveat", ui-rounded, cursive;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #1a1024;
+  --color-plum: #2b1440;
+  --color-rose: #f4a3c0;
+  --color-gold: #e8b84b;
+  --color-cream: #fdf6ec;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: #14081f;
+  color: #fdf6ec;
+  font-family: var(--font-sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+::selection {
+  background: #e8b84b;
+  color: #2b1440;
+}
+
+button,
+a,
+input,
+textarea {
+  touch-action: manipulation;
+}
+
+.min-h-dscreen {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* leftover utility — never hide anything */
+.reveal {
+  opacity: 1;
+  transform: none;
+}
+
+/* ============================================================
+   BOOK  ·  realistic page turn
+   ============================================================ */
+.book-stage {
+  perspective: 2000px;
+  perspective-origin: 50% 50%;
+}
+@media (max-width: 640px) {
+  .book-stage {
+    perspective: 1200px;
+  }
+}
+
+.sheet {
+  transform-style: preserve-3d;
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+.face-back {
+  transform: rotateY(180deg);
+}
+
+/* The turn itself — paper accelerates off the spine, then settles.
+   The tiny translateZ lift keeps it from z-fighting the page below. */
+@keyframes flipForward {
+  0% {
+    transform: rotateY(0deg) translateZ(0px);
+  }
+  45% {
+    transform: rotateY(-88deg) translateZ(26px);
+  }
+  100% {
+    transform: rotateY(-180deg) translateZ(0px);
+  }
+}
+@keyframes flipBackward {
+  0% {
+    transform: rotateY(-180deg) translateZ(0px);
+  }
+  55% {
+    transform: rotateY(-92deg) translateZ(26px);
+  }
+  100% {
+    transform: rotateY(0deg) translateZ(0px);
+  }
+}
+.flip-fwd {
+  animation: flipForward var(--flip-dur, 1000ms) cubic-bezier(0.5, 0.02, 0.35, 1) forwards;
+}
+.flip-bwd {
+  animation: flipBackward var(--flip-dur, 1000ms) cubic-bezier(0.5, 0.02, 0.35, 1) forwards;
+}
+
+/* ---- dynamic lighting on the moving sheet ---- */
+/* the side facing you darkens as it rotates away from the light */
+@keyframes shadeFront {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.82;
+  }
+}
+@keyframes shadeFrontRev {
+  0% {
+    opacity: 0.82;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* the reverse side starts in shadow and brightens as it lands */
+@keyframes shadeBack {
+  0% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes shadeBackRev {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.95;
+  }
+}
+.shade-front {
+  animation: shadeFront var(--flip-dur, 1000ms) linear forwards;
+}
+.shade-front-rev {
+  animation: shadeFrontRev var(--flip-dur, 1000ms) linear forwards;
+}
+.shade-back {
+  animation: shadeBack var(--flip-dur, 1000ms) linear forwards;
+}
+.shade-back-rev {
+  animation: shadeBackRev var(--flip-dur, 1000ms) linear forwards;
+}
+
+/* a specular band sweeping across the paper as it catches the light */
+@keyframes gloss {
+  0% {
+    opacity: 0;
+    transform: translateX(-30%);
+  }
+  40% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(35%);
+  }
+}
+.gloss {
+  animation: gloss var(--flip-dur, 1000ms) ease-in-out forwards;
+}
+
+/* the page underneath is shadowed by the sheet hovering over it */
+@keyframes castShadow {
+  0% {
+    opacity: 0.85;
+    transform: scaleX(0.06);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scaleX(0.75);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+.cast-shadow {
+  transform-origin: left center;
+  animation: castShadow var(--flip-dur, 1000ms) ease-out forwards;
+}
+
+/* content settling in after the page lands */
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-in {
+  animation: pageIn 0.55s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* stacked paper edges peeking out past the fore-edge */
+.page-edges::before,
+.page-edges::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  right: -4px;
+  width: 4px;
+  border-radius: 0 8px 8px 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+}
+.page-edges::after {
+  right: -8px;
+  top: 18px;
+  bottom: 18px;
+  opacity: 0.55;
+}
+
+/* only the wishes page scrolls */
+.page-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(232, 184, 75, 0.5) transparent;
+}
+.page-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.page-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.page-scroll::-webkit-scrollbar-thumb {
+  background: rgba(232, 184, 75, 0.5);
+  border-radius: 99px;
+}
+
+/* ---------- ambient animations ---------- */
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(3deg);
+  }
+}
+.animate-floaty {
+  animation: floaty 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+.text-shimmer {
+  background: linear-gradient(90deg, #f4a3c0, #e8b84b, #fff3d1, #e8b84b, #f4a3c0);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+@keyframes auroraDrift {
+  0% {
+    transform: translate3d(-6%, -4%, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(6%, 6%, 0) scale(1.2);
+  }
+  100% {
+    transform: translate3d(-6%, -4%, 0) scale(1.05);
+  }
+}
+.animate-aurora {
+  animation: auroraDrift 22s ease-in-out infinite;
+}
+
+@keyframes fall {
+  0% {
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--drift, 40px), 110vh, 0) rotate(540deg);
+    opacity: 0;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.caret {
+  animation: caret 1s step-end infinite;
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 184, 75, 0.45);
+  }
+  60% {
+    box-shadow: 0 0 0 22px rgba(232, 184, 75, 0);
+  }
+}
+.animate-pulse-glow {
+  animation: pulseGlow 2.6s ease-out infinite;
+}
+
+@keyframes lidPop {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  40% {
+    transform: translateY(-64px) rotate(-14deg);
+  }
+  100% {
+    transform: translateY(-54px) rotate(-10deg);
+  }
+}
+.lid-open {
+  animation: lidPop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.glass {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.gold-line {
+  background: linear-gradient(90deg, transparent, #e8b84b, transparent);
+}
+
+.paper {
+  background:
+    radial-gradient(circle at 20% 10%, rgba(244, 163, 192, 0.18), transparent 55%),
+    radial-gradient(circle at 85% 80%, rgba(232, 184, 75, 0.18), transparent 55%), #fdf6ec;
+  color: #2b1440;
+}
+
+/* ---------- mobile performance ---------- */
+@media (max-width: 640px) {
+  .animate-aurora {
+    filter: blur(32px);
+    animation-duration: 30s;
+  }
+  .ambient-star {
+    animation: none !important;
+    opacity: 0.45 !important;
+  }
+  .ambient-petal {
+    display: none;
+  }
+  .glass {
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .flip-fwd,
+  .flip-bwd,
+  .gloss,
+  .cast-shadow,
+  .shade-front,
+  .shade-front-rev,
+  .shade-back,
+  .shade-back-rev,
+  .page-in {
+    animation-duration: 1ms !important;
+  }
+  .animate-aurora,
+  .animate-floaty,
+  .animate-pulse-glow,
+  .text-shimmer {
+    animation: none !important;
+  }
+}
