@@ -17,10 +17,12 @@ create table if not exists public.deleted_wishes (
 
 alter table public.wishes enable row level security;
 
+drop policy if exists "Anyone can read active wishes" on public.wishes;
 create policy "Anyone can read active wishes"
 on public.wishes for select
 using (deleted_at is null);
 
+drop policy if exists "Anyone can add wishes" on public.wishes;
 create policy "Anyone can add wishes"
 on public.wishes for insert
 with check (true);
@@ -40,6 +42,7 @@ using (true);
 
 alter table public.deleted_wishes enable row level security;
 
+drop policy if exists "Anyone can log deleted wishes" on public.deleted_wishes;
 create policy "Anyone can log deleted wishes"
 on public.deleted_wishes for insert
 with check (true);
