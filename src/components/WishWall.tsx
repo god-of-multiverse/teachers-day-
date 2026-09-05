@@ -17,6 +17,9 @@ export default function WishWall() {
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editText, setEditText] = useState("");
   const [open, setOpen] = useState(false); // compose panel (mobile-friendly)
   const listRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -64,6 +67,24 @@ export default function WishWall() {
   };
 
   const remove = (id: string) => persist(wishes.filter((w) => w.id !== id));
+
+  const startEdit = (wish: Wish) => {
+    setEditingId(wish.id);
+    setEditName(wish.name);
+    setEditText(wish.text);
+  };
+
+  const saveEdit = (id: string) => {
+    if (!editText.trim()) return;
+    persist(
+      wishes.map((wish) =>
+        wish.id === id
+          ? { ...wish, name: editName.trim() || "A student", text: editText.trim() }
+          : wish,
+      ),
+    );
+    setEditingId(null);
+  };
 
   /** textarea grows with the message — flexible, never a fixed box */
   const autoGrow = (el: HTMLTextAreaElement | null) => {
@@ -168,19 +189,62 @@ export default function WishWall() {
                 <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-sm drop-shadow">
                   📌
                 </span>
-                <button
-                  onClick={() => remove(w.id)}
-                  aria-label="Remove wish"
-                  className="absolute top-1 right-1.5 text-[0.7rem] text-plum/30 opacity-0 transition group-hover:opacity-100 focus:opacity-100"
-                >
-                  ✕
-                </button>
-                <p className="font-hand text-[0.95rem] leading-snug break-words hyphens-auto sm:text-lg">
-                  {w.text}
-                </p>
-                <p className="mt-2 text-[0.5rem] font-semibold tracking-[0.16em] text-plum/60 uppercase">
-                  — {w.name}
-                </p>
+                {editingId === w.id ? (
+                  <div className="space-y-2">
+                    <input
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      maxLength={28}
+                      aria-label="Edit name"
+                      className="w-full rounded-md border border-plum/20 bg-white/30 px-2 py-1 text-xs text-plum outline-none"
+                    />
+                    <textarea
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      maxLength={220}
+                      aria-label="Edit wish"
+                      className="w-full resize-none rounded-md border border-plum/20 bg-white/30 px-2 py-1 text-sm leading-snug text-plum outline-none"
+                      rows={4}
+                    />
+                    <div className="flex justify-end gap-1.5 text-[0.6rem] font-semibold uppercase">
+                      <button onClick={() => setEditingId(null)} className="rounded-full px-2 py-1 text-plum/60">
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => saveEdit(w.id)}
+                        disabled={!editText.trim()}
+                        className="rounded-full bg-plum/15 px-2 py-1 text-plum disabled:opacity-40"
+                      >
+                        Save
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-hand text-[0.95rem] leading-snug break-words hyphens-auto sm:text-lg">
+                      {w.text}
+                    </p>
+                    <p className="mt-2 text-[0.5rem] font-semibold tracking-[0.16em] text-plum/60 uppercase">
+                      — {w.name}
+                    </p>
+                    <div className="mt-2 flex justify-end gap-1.5 text-[0.6rem] font-semibold uppercase">
+                      <button
+                        onClick={() => startEdit(w)}
+                        aria-label="Edit wish"
+                        className="rounded-full bg-plum/10 px-2 py-1 text-plum/65 transition hover:bg-plum/20"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => remove(w.id)}
+                        aria-label="Delete wish"
+                        className="rounded-full bg-plum/10 px-2 py-1 text-plum/65 transition hover:bg-plum/20"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
