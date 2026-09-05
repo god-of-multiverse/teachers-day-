@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { fireConfetti } from "../lib/confetti";
+import { supabase } from "../lib/supabase";
 
 type Wish = { name: string; text: string; id: string; ownerId?: string };
 type DeletedWish = Wish & { deletedAt: string };
@@ -41,19 +42,54 @@ export default function WishWall() {
   const taRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) {
-        const saved = JSON.parse(raw) as Wish[];
-        const realWishes = saved.filter((wish) => !wish.id.startsWith("seed-"));
-        setWishes(realWishes);
-        localStorage.setItem(KEY, JSON.stringify(realWishes));
-        return;
+    let active = true;
+
+    const load = async () => {
+      if (supabase) {
+        const { data, error } = await supabase
+          .from("wishes")
+          .select("id, owner_id, name, comment")
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false });
+        if (!error && active) {
+          setWishes(
+            (data ?? []).map((wish) => ({
+              id: wish.id,
+              ownerId: wish.owner_id,
+              name: wish.name,
+              text: wish.comment,
+            })),
+          );
+          return;
+        }
       }
-    } catch {
-      /* ignore */
+
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (raw) {
+          const saved = JSON.parse(raw) as Wish[];
+          const realWishes = saved.filter((wish) => !wish.id.startsWith("seed-"));
+          if (active) setWishes(realWishes);
+          localStorage.setItem(KEY, JSON.stringify(realWishes));
+          return;
+        }
+      } catch {
+        /* ignore */
+      }
+      if (active) setWishes([]);
+    };
+
+    void load();
+    const channel = supabase?.channel("wishes-live").on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "wishes" },
+      () => void load(),
+    ).subscribe();
+
+    return () => {
+      active = false;
+      if (channel) void supabase?.removeChannel(channel);
     }
-    setWishes([]);
   }, []);
 
   const persist = (next: Wish[]) => {
@@ -65,27 +101,54 @@ export default function WishWall() {
     }
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
-    persist([
-      {
-        id: crypto.randomUUID?.() ?? String(Date.now()),
-        ownerId,
-        name: name.trim() || "A student",
-        text: text.trim(),
-      },
-      ...wishes,
-    ]);
+    const wish = {
+      id: crypto.randomUUID?.() ?? String(Date.now()),
+      ownerId,
+      name: name.trim() || "A student",
+      text: text.trim(),
+    };
+    if (supabase) {
+      const { error } = await supabase.from("wishes").insert({
+        id: wish.id,
+        owner_id: wish.ownerId,
+        name: wish.name,
+        comment: wish.text,
+      });
+      if (error) return;
+      setWishes((current) => [wish, ...current]);
+    } else {
+      persist([wish, ...wishes]);
+    }
     setText("");
     setOpen(false);
     listRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     fireConfetti(window.innerWidth / 2, window.innerHeight * 0.55, 70);
   };
 
-  const remove = (id: string) => {
+  const remove = async (id: string) => {
     const wish = wishes.find((item) => item.id === id && item.ownerId === ownerId);
     if (!wish) return;
+
+    if (supabase) {
+      const deletedAt = new Date().toISOString();
+      const { error } = await supabase
+        .from("wishes")
+        .update({ deleted_at: deletedAt })
+        .eq("id", id);
+      if (error) return;
+      await supabase.from("deleted_wishes").insert({
+        id: wish.id,
+        owner_id: wish.ownerId,
+        name: wish.name,
+        comment: wish.text,
+        deleted_at: deletedAt,
+      });
+      setWishes((current) => current.filter((item) => item.id !== id));
+      return;
+    }
 
     try {
       const raw = localStorage.getItem(AUDIT_KEY);
@@ -107,12 +170,22 @@ export default function WishWall() {
     setEditText(wish.text);
   };
 
-  const saveEdit = (id: string) => {
+  const saveEdit = async (id: string) => {
     if (!editText.trim()) return;
+    const nextName = editName.trim() || "A student";
+    const nextText = editText.trim();
+    if (supabase) {
+      const { error } = await supabase
+        .from("wishes")
+        .update({ name: nextName, comment: nextText })
+        .eq("id", id)
+        .eq("owner_id", ownerId);
+      if (error) return;
+    }
     persist(
       wishes.map((wish) =>
         wish.id === id && wish.ownerId === ownerId
-          ? { ...wish, name: editName.trim() || "A student", text: editText.trim() }
+          ? { ...wish, name: nextName, text: nextText }
           : wish,
       ),
     );
