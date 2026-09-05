@@ -37,6 +37,7 @@ export default function WishWall() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editText, setEditText] = useState("");
+  const [status, setStatus] = useState("");
   const [open, setOpen] = useState(false); // compose panel (mobile-friendly)
   const listRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -159,21 +160,36 @@ export default function WishWall() {
   const remove = async (id: string) => {
     const wish = wishes.find((item) => item.id === id && item.ownerId === ownerId);
     if (!wish) return;
+    setStatus("");
 
     if (supabase) {
       const deletedAt = new Date().toISOString();
       const { error } = await supabase
         .from("wishes")
         .update({ deleted_at: deletedAt })
-        .eq("id", id);
-      if (error) return;
-      await supabase.from("deleted_wishes").insert({
+        .eq("id", id)
+        .eq("owner_id", ownerId);
+      if (error) {
+        setStatus("This wish could not be deleted. Please try again.");
+        return;
+      }
+      const { data: stillActive, error: verifyError } = await supabase
+        .from("wishes")
+        .select("id")
+        .eq("id", id)
+        .is("deleted_at", null);
+      if (verifyError || stillActive?.length) {
+        setStatus("Delete was blocked by the database. Please run the latest schema in Supabase.");
+        return;
+      }
+      const { error: auditError } = await supabase.from("deleted_wishes").insert({
         id: wish.id,
         owner_id: wish.ownerId,
         name: wish.name,
         comment: wish.text,
         deleted_at: deletedAt,
       });
+      if (auditError) console.error("Could not write deleted wish audit:", auditError);
       setWishes((current) => current.filter((item) => item.id !== id));
       return;
     }
@@ -394,6 +410,7 @@ export default function WishWall() {
       <p className="shrink-0 pt-1 text-center text-[0.5rem] tracking-[0.2em] text-cream/25 uppercase">
         {wishes.length} {wishes.length === 1 ? "wish" : "wishes"} pinned · saved on this device
       </p>
+      {status && <p className="shrink-0 text-center text-[0.6rem] text-rose-200">{status}</p>}
     </div>
   );
 }
