@@ -384,6 +384,26 @@ textarea {
   background: linear-gradient(90deg, transparent, #e8b84b, transparent);
 }
 
+.wish-rainbow {
+  background: linear-gradient(90deg, #ef4444, #f59e0b, #eab308, #22c55e, #06b6d4, #6366f1, #ec4899, #ef4444);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 14px rgba(244, 163, 192, 0.7);
+  animation: wishRainbow 5s linear infinite;
+}
+
+.wish-rainbow-swatch {
+  background: linear-gradient(135deg, #ef4444, #f59e0b, #22c55e, #06b6d4, #6366f1, #ec4899);
+}
+
+@keyframes wishRainbow {
+  to {
+    background-position: 250% 0;
+  }
+}
+
 .paper {
   background:
     radial-gradient(circle at 20% 10%, rgba(244, 163, 192, 0.18), transparent 55%),

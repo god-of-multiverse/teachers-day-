@@ -33,6 +33,7 @@ const TEXT_COLORS = [
   { value: "#7f1d1d", label: "Ruby" },
   { value: "#14532d", label: "Forest" },
   { value: "#164e63", label: "Ocean" },
+  { value: "rainbow", label: "Rainbow glow" },
 ];
 
 function getOwnerId() {
@@ -421,8 +422,8 @@ export default function WishWall() {
                           title={color.label}
                           aria-label={`${color.label} text`}
                           onClick={() => setEditColor(color.value)}
-                          className={`h-5 w-5 rounded-full border-2 ${editColor === color.value ? "border-plum" : "border-white/70"}`}
-                          style={{ backgroundColor: color.value }}
+                          className={`h-5 w-5 rounded-full border-2 ${editColor === color.value ? "border-plum" : "border-white/70"} ${color.value === "rainbow" ? "wish-rainbow-swatch" : ""}`}
+                          style={color.value === "rainbow" ? undefined : { backgroundColor: color.value }}
                         />
                       ))}
                     </div>
@@ -442,8 +443,8 @@ export default function WishWall() {
                 ) : (
                   <>
                     <p
-                      className={`${FONT_OPTIONS.find((font) => font.value === w.font)?.className || "font-hand"} text-[0.95rem] leading-snug break-words hyphens-auto sm:text-lg`}
-                      style={{ color: w.color || "#2b1440" }}
+                      className={`${FONT_OPTIONS.find((font) => font.value === w.font)?.className || "font-hand"} ${w.color === "rainbow" ? "wish-rainbow" : ""} text-[0.95rem] leading-snug break-words hyphens-auto sm:text-lg`}
+                      style={w.color === "rainbow" ? undefined : { color: w.color || "#2b1440" }}
                     >
                       {w.text}
                     </p>
