@@ -412,14 +412,13 @@ textarea {
   }
 
   .wish-keyboard-open {
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding-bottom: 4rem;
+    overflow: hidden;
+    padding-bottom: 0;
   }
 
   .wish-keyboard-open .page-scroll {
-    overflow: visible;
-    flex: none;
+    overflow-y: auto;
+    flex: 1;
   }
 
   .wish-keyboard-open .wish-wall-footer {
