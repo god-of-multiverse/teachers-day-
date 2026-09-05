@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { fireConfetti } from "../lib/confetti";
 
 type Wish = { name: string; text: string; id: string; ownerId?: string };
+type DeletedWish = Wish & { deletedAt: string };
 
 const KEY = "teachers-day-wishes";
 const OWNER_KEY = "teachers-day-owner-id";
+const AUDIT_KEY = "teachers-day-deleted-wishes";
 const TILT = ["-rotate-2", "rotate-1", "-rotate-1", "rotate-2", "rotate-0"];
 const TONES = [
   "from-amber-200/95 to-amber-100/85",
@@ -81,8 +83,23 @@ export default function WishWall() {
     fireConfetti(window.innerWidth / 2, window.innerHeight * 0.55, 70);
   };
 
-  const remove = (id: string) =>
-    persist(wishes.filter((wish) => wish.id !== id || wish.ownerId !== ownerId));
+  const remove = (id: string) => {
+    const wish = wishes.find((item) => item.id === id && item.ownerId === ownerId);
+    if (!wish) return;
+
+    try {
+      const raw = localStorage.getItem(AUDIT_KEY);
+      const deleted = raw ? (JSON.parse(raw) as DeletedWish[]) : [];
+      localStorage.setItem(
+        AUDIT_KEY,
+        JSON.stringify([...deleted, { ...wish, deletedAt: new Date().toISOString() }]),
+      );
+    } catch {
+      /* ignore */
+    }
+
+    persist(wishes.filter((item) => item.id !== id));
+  };
 
   const startEdit = (wish: Wish) => {
     setEditingId(wish.id);
