@@ -25,15 +25,18 @@ create policy "Anyone can add wishes"
 on public.wishes for insert
 with check (true);
 
+drop policy if exists "Students can edit wishes" on public.wishes;
 create policy "Students can edit wishes"
 on public.wishes for update
+to anon, authenticated
 using (true)
 with check (true);
 
-create policy "Students can archive wishes"
-on public.wishes for update
-using (true)
-with check (true);
+drop policy if exists "Students can delete wishes" on public.wishes;
+create policy "Students can delete wishes"
+on public.wishes for delete
+to anon, authenticated
+using (true);
 
 alter table public.deleted_wishes enable row level security;
 
