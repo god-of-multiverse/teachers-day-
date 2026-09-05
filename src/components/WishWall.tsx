@@ -33,6 +33,12 @@ const TEXT_COLORS = [
   { value: "#7f1d1d", label: "Ruby" },
   { value: "#14532d", label: "Forest" },
   { value: "#164e63", label: "Ocean" },
+  { value: "#92400e", label: "Amber" },
+  { value: "#854d0e", label: "Gold" },
+  { value: "#9f1239", label: "Rose" },
+  { value: "#1e3a8a", label: "Sapphire" },
+  { value: "#312e81", label: "Royal blue" },
+  { value: "#581c87", label: "Royal purple" },
   { value: "rainbow", label: "Rainbow glow" },
 ];
 
