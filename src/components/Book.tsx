@@ -147,6 +147,7 @@ function PageContent({ i, live }: { i: number; live: boolean }) {
 
 export default function Book() {
   const [index, setIndex] = useState(() => {
+    if (new URLSearchParams(window.location.search).get("start") === "cover") return 0;
     const saved = Number(localStorage.getItem(PAGE_KEY));
     return Number.isInteger(saved) && saved >= 0 && saved < TOTAL ? saved : 0;
   });

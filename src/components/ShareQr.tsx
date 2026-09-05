@@ -4,7 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 
 export default function ShareQr() {
   const [open, setOpen] = useState(false);
-  const url = window.location.href.split("?")[0];
+  const url = `${window.location.origin}${window.location.pathname}?start=cover`;
 
   return (
     <>
