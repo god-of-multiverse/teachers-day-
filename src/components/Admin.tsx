@@ -9,6 +9,8 @@ export default function Admin() {
   const [user, setUser] = useState<string | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [error, setError] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editComment, setEditComment] = useState("");
 
   const load = async () => {
     if (!supabase) return;
@@ -45,16 +47,23 @@ export default function Admin() {
     setRows([]);
   };
 
-  const editWish = async (row: Row) => {
-    const nextComment = window.prompt("Edit this wish", row.comment);
-    if (!nextComment?.trim()) return;
+  const startEdit = (row: Row) => {
+    setEditingId(row.id);
+    setEditComment(row.comment);
+  };
+
+  const saveEdit = async (row: Row) => {
+    if (!editComment.trim()) return;
     const { error: editError } = await supabase?.rpc("admin_edit_wish", {
       wish_id: row.id,
       next_name: row.name,
-      next_comment: nextComment.trim(),
+      next_comment: editComment.trim(),
     }) ?? { error: new Error("Supabase is unavailable") };
     if (editError) setError(editError.message);
-    else void load();
+    else {
+      setEditingId(null);
+      void load();
+    }
   };
 
   const deleteWish = async (id: string) => {
@@ -89,7 +98,7 @@ export default function Admin() {
         <p className="mt-2 text-sm text-cream/60">Signed in as {user}</p>
         {error && <p className="mt-3 rounded-xl bg-rose-300/10 p-3 text-sm text-rose-200">{error}</p>}
         <div className="mt-6 space-y-3">
-          {rows.map((row) => <article key={row.id} className="rounded-2xl bg-white/10 p-4"><p className="font-semibold text-amber-200">{row.name}</p><p className="mt-1">{row.comment}</p><p className="mt-2 text-xs text-cream/45">{new Date(row.created_at).toLocaleString()}</p><div className="mt-3 flex gap-2"><button onClick={() => void editWish(row)} className="rounded-full bg-amber-300 px-3 py-1 text-xs font-semibold text-plum">Edit</button><button onClick={() => void deleteWish(row.id)} className="rounded-full bg-rose-300/20 px-3 py-1 text-xs font-semibold text-rose-100">Delete</button></div></article>)}
+          {rows.map((row) => <article key={row.id} className="rounded-2xl bg-white/10 p-4"><p className="font-semibold text-amber-200">{row.name}</p>{editingId === row.id ? <textarea value={editComment} onChange={(event) => setEditComment(event.target.value)} rows={4} className="mt-2 w-full rounded-lg bg-white/10 p-3 text-cream outline-none" /> : <p className="mt-1">{row.comment}</p>}<p className="mt-2 text-xs text-cream/45">{new Date(row.created_at).toLocaleString()}</p><div className="mt-3 flex gap-2">{editingId === row.id ? <><button onClick={() => void saveEdit(row)} className="rounded-full bg-amber-300 px-3 py-1 text-xs font-semibold text-plum">Save</button><button onClick={() => setEditingId(null)} className="rounded-full border border-white/15 px-3 py-1 text-xs">Cancel</button></> : <button onClick={() => startEdit(row)} className="rounded-full bg-amber-300 px-3 py-1 text-xs font-semibold text-plum">Edit</button>}<button onClick={() => void deleteWish(row.id)} className="rounded-full bg-rose-300/20 px-3 py-1 text-xs font-semibold text-rose-100">Delete</button></div></article>)}
           {!rows.length && <p className="text-cream/60">No wishes found.</p>}
         </div>
       </div>
