@@ -379,9 +379,27 @@ export default function WishWall() {
                 key={w.id}
                 className={`group relative break-inside-avoid rounded-xl bg-gradient-to-br p-3 pt-5 text-plum shadow-lg transition-transform duration-300 sm:hover:rotate-0 sm:hover:scale-[1.02] ${TONES[i % TONES.length]} ${TILT[i % TILT.length]}`}
               >
-                <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 text-sm drop-shadow">
-                  📌
-                </span>
+                <div className="absolute -top-1.5 left-1/2 flex -translate-x-1/2 items-center gap-1">
+                  <span className="text-sm drop-shadow">📌</span>
+                  {canManage && (
+                    <div className="flex gap-1 text-[0.55rem] font-semibold uppercase">
+                      <button
+                        onClick={() => startEdit(w)}
+                        aria-label="Edit wish"
+                        className="rounded-full bg-white/50 px-1.5 py-0.5 text-plum shadow-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => remove(w.id)}
+                        aria-label="Delete wish"
+                        className="rounded-full bg-white/50 px-1.5 py-0.5 text-plum shadow-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
                 {editingId === w.id ? (
                   <div className="space-y-2">
                     <input
@@ -451,22 +469,6 @@ export default function WishWall() {
                     <p className="mt-2 text-[0.5rem] font-semibold tracking-[0.16em] text-plum/60 uppercase">
                       — {w.name}
                     </p>
-                    {canManage && <div className="mt-2 flex justify-end gap-1.5 text-[0.6rem] font-semibold uppercase">
-                      <button
-                        onClick={() => startEdit(w)}
-                        aria-label="Edit wish"
-                        className="rounded-full bg-plum/10 px-2 py-1 text-plum/65 transition hover:bg-plum/20"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => remove(w.id)}
-                        aria-label="Delete wish"
-                        className="rounded-full bg-plum/10 px-2 py-1 text-plum/65 transition hover:bg-plum/20"
-                      >
-                        Delete
-                      </button>
-                    </div>}
                   </>
                 )}
               </div>
