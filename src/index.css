@@ -407,6 +407,10 @@ textarea {
 }
 
 @media (max-width: 640px) {
+  .wishes-folio {
+    display: none;
+  }
+
   .wish-keyboard-open {
     overflow-y: auto;
     overscroll-behavior: contain;
