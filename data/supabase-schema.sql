@@ -19,6 +19,10 @@ create table if not exists public.admin_users (
   email text primary key
 );
 
+insert into public.admin_users (email)
+values ('kalyansuhash@gmail.com')
+on conflict (email) do nothing;
+
 alter table public.wishes add column if not exists font text not null default 'hand';
 alter table public.wishes add column if not exists color text not null default '#2b1440';
 alter table public.wishes add column if not exists likes integer not null default 0;
