@@ -17,6 +17,8 @@ create table if not exists public.deleted_wishes (
 
 alter table public.wishes add column if not exists font text not null default 'hand';
 alter table public.wishes add column if not exists color text not null default '#2b1440';
+alter table public.wishes add column if not exists likes integer not null default 0;
+alter table public.wishes add column if not exists liked_by text[] not null default '{}';
 alter table public.deleted_wishes add column if not exists font text not null default 'hand';
 alter table public.deleted_wishes add column if not exists color text not null default '#2b1440';
 

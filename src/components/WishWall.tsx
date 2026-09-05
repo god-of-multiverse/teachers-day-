@@ -9,6 +9,8 @@ type Wish = {
   ownerId?: string;
   font?: string;
   color?: string;
+  likes?: number;
+  likedBy?: string[];
 };
 type DeletedWish = Wish & { deletedAt: string };
 
@@ -98,7 +100,7 @@ export default function WishWall() {
       if (supabase) {
         let { data, error } = await supabase
           .from("wishes")
-          .select("id, owner_id, name, comment, font, color")
+          .select("id, owner_id, name, comment, font, color, likes, liked_by")
           .is("deleted_at", null)
           .order("created_at", { ascending: false });
         if (!error && active) {
@@ -124,7 +126,7 @@ export default function WishWall() {
             );
             const refreshed = await supabase
               .from("wishes")
-                .select("id, owner_id, name, comment, font, color")
+                .select("id, owner_id, name, comment, font, color, likes, liked_by")
               .is("deleted_at", null)
               .order("created_at", { ascending: false });
             if (!refreshed.error) data = refreshed.data;
@@ -135,8 +137,10 @@ export default function WishWall() {
             ownerId: wish.owner_id,
             name: wish.name,
             text: wish.comment,
-                        font: wish.font ?? "hand",
-                        color: wish.color ?? "#2b1440",
+            font: wish.font ?? "hand",
+            color: wish.color ?? "#2b1440",
+            likes: wish.likes ?? 0,
+            likedBy: wish.liked_by ?? [],
           }));
           setWishes(sharedWishes);
           localStorage.setItem(KEY, JSON.stringify(sharedWishes));
@@ -225,6 +229,8 @@ export default function WishWall() {
         comment: wish.text,
         font: wish.font,
         color: wish.color,
+        likes: 0,
+        liked_by: [],
       });
       if (error) {
         persist([wish, ...wishes]);
@@ -273,6 +279,27 @@ export default function WishWall() {
     }
 
     persist(wishes.filter((item) => item.id !== id));
+  };
+
+  const toggleLike = async (wish: Wish) => {
+    const likedBy = wish.likedBy ?? [];
+    const nextLikedBy = likedBy.includes(ownerId)
+      ? likedBy.filter((id) => id !== ownerId)
+      : [...likedBy, ownerId];
+    const next = wishes.map((item) =>
+      item.id === wish.id ? { ...item, likedBy: nextLikedBy, likes: nextLikedBy.length } : item,
+    );
+    if (supabase) {
+      const { error } = await supabase
+        .from("wishes")
+        .update({ likes: nextLikedBy.length, liked_by: nextLikedBy })
+        .eq("id", wish.id);
+      if (error) {
+        setStatus("Reaction could not be saved. Please try again.");
+        return;
+      }
+    }
+    persist(next);
   };
 
   const startEdit = (wish: Wish) => {
@@ -536,6 +563,14 @@ export default function WishWall() {
                         Delete
                       </button>
                     </div>}
+                    <button
+                      type="button"
+                      onClick={() => void toggleLike(w)}
+                      aria-label="Appreciate this wish"
+                      className="mt-2 rounded-full bg-plum/10 px-2 py-1 text-[0.65rem] text-plum/70"
+                    >
+                      {w.likedBy?.includes(ownerId) ? "♥" : "♡"} {w.likes ?? 0}
+                    </button>
                   </>
                 )}
               </div>
