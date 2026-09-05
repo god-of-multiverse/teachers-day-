@@ -20,6 +20,7 @@ export type PageDef = {
 };
 
 const FLIP_MS = 1000;
+const PAGE_KEY = "teachers-day-current-page";
 
 const PAGES: PageDef[] = [
   { label: "Cover", icon: "🌷", node: <Cover /> },
@@ -145,7 +146,10 @@ function PageContent({ i, live }: { i: number; live: boolean }) {
 }
 
 export default function Book() {
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() => {
+    const saved = Number(localStorage.getItem(PAGE_KEY));
+    return Number.isInteger(saved) && saved >= 0 && saved < TOTAL ? saved : 0;
+  });
   const [flip, setFlip] = useState<{ from: number; dir: 1 | -1 } | null>(null);
   const busy = useRef(false);
 
@@ -155,6 +159,7 @@ export default function Book() {
       busy.current = true;
       setFlip({ from: index, dir: target > index ? 1 : -1 });
       setIndex(target);
+      localStorage.setItem(PAGE_KEY, String(target));
       playPageTurn();
       window.setTimeout(() => {
         setFlip(null);
