@@ -73,8 +73,20 @@ export default function WishWall() {
   const [editColor, setEditColor] = useState("#2b1440");
   const [status, setStatus] = useState("");
   const [open, setOpen] = useState(false); // compose panel (mobile-friendly)
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const syncKeyboard = () => {
+      setKeyboardOpen(viewport.height < window.innerHeight * 0.82);
+    };
+    syncKeyboard();
+    viewport.addEventListener("resize", syncKeyboard);
+    return () => viewport.removeEventListener("resize", syncKeyboard);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -289,7 +301,9 @@ export default function WishWall() {
   };
 
   return (
-    <div className="flex h-full flex-col px-3 pt-3 pb-1 sm:px-8 sm:pt-4">
+    <div
+      className={`wish-wall flex h-full flex-col px-3 pt-3 pb-1 sm:px-8 sm:pt-4 ${keyboardOpen ? "wish-keyboard-open" : ""}`}
+    >
       {/* ---------- compact header ---------- */}
       <div className="shrink-0 text-center">
         <div className="mb-1 flex items-center justify-center gap-2.5">
@@ -518,7 +532,7 @@ export default function WishWall() {
         )}
       </div>
 
-      <p className="shrink-0 pt-1 text-center text-[0.5rem] tracking-[0.2em] text-cream/25 uppercase">
+      <p className="wish-wall-footer shrink-0 pt-1 text-center text-[0.5rem] tracking-[0.2em] text-cream/25 uppercase">
         {wishes.length} {wishes.length === 1 ? "wish" : "wishes"} pinned · saved on this device
       </p>
       {status && <p className="shrink-0 text-center text-[0.6rem] text-rose-200">{status}</p>}

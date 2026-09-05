@@ -402,6 +402,27 @@ textarea {
   max-width: 9rem;
 }
 
+.wish-wall {
+  min-height: 0;
+}
+
+@media (max-width: 640px) {
+  .wish-keyboard-open {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 4rem;
+  }
+
+  .wish-keyboard-open .page-scroll {
+    overflow: visible;
+    flex: none;
+  }
+
+  .wish-keyboard-open .wish-wall-footer {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .wish-style-controls {
     row-gap: 0.45rem;
