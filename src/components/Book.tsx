@@ -113,7 +113,7 @@ function PageChrome({ i, children }: { i: number; children: React.ReactNode }) {
 
       {children}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex items-center justify-between px-4 pb-2 text-[0.52rem] tracking-[0.22em] text-cream/35 uppercase sm:px-9 sm:pb-2.5 sm:text-[0.55rem]">
+      <div className="page-folio pointer-events-none absolute inset-x-0 bottom-0 z-30 flex items-center justify-between px-4 pb-2 text-[0.52rem] tracking-[0.22em] text-cream/35 uppercase sm:px-9 sm:pb-2.5 sm:text-[0.55rem]">
         <span>{PAGES[i].label}</span>
         <span>
           {i + 1} / {TOTAL}

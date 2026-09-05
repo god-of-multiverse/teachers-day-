@@ -421,6 +421,10 @@ textarea {
   .wish-keyboard-open .wish-wall-footer {
     display: none;
   }
+
+    .page-edges:has(.wish-keyboard-open) .page-folio {
+      display: none;
+    }
 }
 
 @media (max-width: 640px) {
