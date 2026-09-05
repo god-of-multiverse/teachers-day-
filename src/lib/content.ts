@@ -133,8 +133,3 @@ export const giftMessage = {
   body: "This little corner of the internet exists for one reason only — to say a thank you that a card was too small to hold. Wishing you health, happiness and endless reasons to smile. 💐",
 };
 
-export const seedWishes = [
-  { name: "Ananya", text: "You made me love reading, Ma'am. Thank you forever. 📚" },
-  { name: "Rohit", text: "The best teacher I've ever had — and the kindest human too." },
-  { name: "Class XII-B", text: "We miss your classes more than we can say. Happy Teacher's Day! 🎉" },
-];

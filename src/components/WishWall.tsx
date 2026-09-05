@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { fireConfetti } from "../lib/confetti";
-import { seedWishes } from "../lib/content";
 
 type Wish = { name: string; text: string; id: string };
 
@@ -25,11 +24,17 @@ export default function WishWall() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) return setWishes(JSON.parse(raw));
+      if (raw) {
+        const saved = JSON.parse(raw) as Wish[];
+        const realWishes = saved.filter((wish) => !wish.id.startsWith("seed-"));
+        setWishes(realWishes);
+        localStorage.setItem(KEY, JSON.stringify(realWishes));
+        return;
+      }
     } catch {
       /* ignore */
     }
-    setWishes(seedWishes.map((w, i) => ({ ...w, id: `seed-${i}` })));
+    setWishes([]);
   }, []);
 
   const persist = (next: Wish[]) => {
