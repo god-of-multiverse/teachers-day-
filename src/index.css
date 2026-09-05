@@ -248,6 +248,11 @@ textarea {
   scrollbar-width: thin;
   scrollbar-color: rgba(232, 184, 75, 0.5) transparent;
 }
+
+.page-folio {
+  position: absolute;
+  pointer-events: none;
+}
 .page-scroll::-webkit-scrollbar {
   width: 6px;
 }
@@ -426,6 +431,12 @@ textarea {
   .wish-keyboard-open .page-scroll {
     overflow-y: auto;
     flex: 1;
+  }
+
+  .wish-keyboard-open .page-folio {
+    position: absolute;
+    bottom: 0;
+    transform: translateY(100%);
   }
 
   .wish-keyboard-open .wish-wall-footer {
