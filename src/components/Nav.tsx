@@ -131,6 +131,14 @@ export default function Nav({ pages, current, onNavigate }: Props) {
               <span className="text-[0.6rem] text-cream/35">{i + 1}</span>
             </button>
           ))}
+          <a
+            href="./admin"
+            onClick={() => setOpen(false)}
+            className="mt-2 flex w-full items-center gap-3 rounded-2xl bg-amber-300/10 px-4 py-3 text-left text-sm tracking-wider text-amber-200 uppercase"
+          >
+            <span className="text-base">🔐</span>
+            <span>Admin login</span>
+          </a>
         </div>
       </div>
     </>
