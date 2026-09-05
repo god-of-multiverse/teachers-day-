@@ -65,7 +65,7 @@ export default function Nav({ pages, current, onNavigate }: Props) {
           <div className="flex items-center gap-2">
             <ShareQr />
             <a
-              href="./admin"
+              href="./?admin"
               className="glass rounded-full px-3 py-2 text-[0.65rem] font-semibold tracking-wider text-cream uppercase"
             >
               Admin login
@@ -132,7 +132,7 @@ export default function Nav({ pages, current, onNavigate }: Props) {
             </button>
           ))}
           <a
-            href="./admin"
+            href="./?admin"
             onClick={() => setOpen(false)}
             className="mt-2 flex w-full items-center gap-3 rounded-2xl bg-amber-300/10 px-4 py-3 text-left text-sm tracking-wider text-amber-200 uppercase"
           >
