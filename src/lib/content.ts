@@ -97,22 +97,22 @@ export const quotes = [
 
 export const gallery = [
   {
-    src: "/images/art-classroom.jpg",
+    src: "images/art-classroom.jpg",
     title: "The Classroom",
     caption: "Four walls that somehow held the whole world.",
   },
   {
-    src: "/images/art-lamp.jpg",
+    src: "images/art-lamp.jpg",
     title: "One Flame, Many Lamps",
     caption: "You lit us up, and never lost your own light.",
   },
   {
-    src: "/images/art-path.jpg",
+    src: "images/art-path.jpg",
     title: "The Way Forward",
     caption: "You built a staircase out of books and told us to climb.",
   },
   {
-    src: "/images/art-flowers.jpg",
+    src: "images/art-flowers.jpg",
     title: "For You",
     caption: "A bouquet that can never quite say enough.",
   },
