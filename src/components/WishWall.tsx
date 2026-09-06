@@ -168,22 +168,9 @@ export default function WishWall() {
     };
 
     void load();
-    const channel = supabase?.channel("wishes-live").on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "wishes" },
-      () => void load(),
-    ).subscribe();
-    const refresh = window.setInterval(() => void load(), 5000);
-    const onVisible = () => {
-      if (document.visibilityState === "visible") void load();
-    };
-    document.addEventListener("visibilitychange", onVisible);
 
     return () => {
       active = false;
-      window.clearInterval(refresh);
-      document.removeEventListener("visibilitychange", onVisible);
-      if (channel) void supabase?.removeChannel(channel);
     }
   }, []);
 
